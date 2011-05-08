@@ -7,6 +7,9 @@ import subprocess
 import os
 from os import path
 
+import SimpleHTTPServer
+import SocketServer
+
 def exit_error(error):
     print(error, file=sys.stderr)
     exit(1)
@@ -48,6 +51,7 @@ def rehash():
     subprocess.check_call(restart_network_command)
 
 def work():
+    print("Switching to 'work' mode. Focus!")
     hFile = open(hosts_file, 'a+')
     contents = hFile.read()
 
@@ -62,10 +66,23 @@ def work():
         print("127.0.0.1\twww." + site, file=hFile)
 
     print(end_token, file=hFile)
+    
+    hFile.close()
 
     rehash()
 
+    if '-s' in sys.argv:
+        handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+        httpd = SocketServer.TCPServer(('127.0.0.1', 80), handler)
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            print("Received interrupt, quitting.")
+        finally:
+            play()
+
 def play():
+    print("Switching to 'play' mode. Have fun!")
     hosts_file_handle = open(hosts_file, "r+")
     lines = hosts_file_handle.readlines()
 
@@ -87,9 +104,12 @@ def play():
 def main():
     if getpass.getuser() != 'root':
         exit_error('Please run script as root.')
-    if len(sys.argv) != 2:
-        exit_error('usage: ' + sys.argv[0] + ' [work|play]')
-    {"work": work, "play": play}[sys.argv[1]]()
+    if 'work' in sys.argv:
+        work()
+    elif 'play' in sys.argv:
+        play()
+    else:
+        exit_error('usage: ' + sys.argv[0] + ' [work|play] (-s)')
 
 if __name__ == "__main__":
     sites_from_ini(ini_file)
