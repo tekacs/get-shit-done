@@ -1,7 +1,7 @@
 # get-shit-done
 get-shit-done is an easy to use command line program that blocks websites known to distract us from our work.
 
-After cloning this repository, put it in your $PATH and ensure it is executable.
+After cloning this repository, put get-shit-done and get-shit-done.(php/py) in your $PATH and ensure it is executable.
 
 Execute it as root because it modifies your hosts file and restarts your network daemon.
 
